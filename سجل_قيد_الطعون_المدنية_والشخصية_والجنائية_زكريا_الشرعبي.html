@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>سجل قيد الطعون والتقارير القضائية</title>
+<style>
+:root{
+  --navy:#0d355d; --green:#198c4b; --blue:#1768b3; --gold:#d4ad28;
+  --bg:#f2f5f9; --text:#172333; --muted:#6f7782; --border:#d9dee5;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Tahoma,Arial,sans-serif;color:var(--text)}
+.header{background:var(--navy);color:#fff;text-align:center;padding:25px 14px 22px;border-bottom:7px solid var(--gold)}
+.header h1{font-size:25px;margin:0 0 12px;font-weight:800}
+.header h2{font-size:20px;color:#f1d14a;margin:0 0 14px}
+.header p{font-size:17px;margin:0}
+.container{max-width:1250px;margin:20px auto;padding:0 18px}
+.card{background:#fff;border-radius:24px;padding:18px 22px;margin-bottom:22px;box-shadow:0 5px 20px rgba(20,40,70,.08);border-top:8px solid var(--green)}
+.card.blue{border-top-color:var(--blue)}
+.card.gold{border-top-color:var(--gold)}
+.card h2{margin:2px 0 10px;font-size:25px}
+.desc{text-align:center;color:#333;font-size:18px;margin:0 0 18px}
+button{border:0;border-radius:15px;padding:15px 18px;font-size:18px;font-family:inherit;cursor:pointer}
+.mainbtn{width:100%;color:#fff;background:var(--green);font-weight:bold}
+.bluebtn{background:var(--blue);color:#fff}.goldbtn{background:#a77d0d;color:#fff}.graybtn{background:#687586;color:#fff}
+.homegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.homecard{background:#fff;border-radius:22px;padding:22px;box-shadow:0 5px 20px rgba(20,40,70,.08);border-top:8px solid var(--green)}
+.homecard.blue{border-top-color:var(--blue)} .homecard.gold{border-top-color:var(--gold)}
+.homecard h2{text-align:center;font-size:22px;margin:4px 0 10px}
+.homecard p{text-align:center;font-size:16px;min-height:45px}
+.toolbar{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:10px;margin:12px 0}
+input,select,textarea{width:100%;padding:14px;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:16px;background:#fff}
+.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.formgrid .full{grid-column:1/-1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tablewrap{overflow:auto;border-radius:12px}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+th{background:var(--navy);color:#fff;padding:12px 9px;font-size:15px;white-space:nowrap}
+td{padding:10px;border-bottom:1px solid #e5e8ed;text-align:center;font-size:14px;background:#fff}
+.empty{text-align:center;padding:25px;color:#777}
+.small{font-size:13px;color:#777}
+.hidden{display:none!important}
+.back{background:#536274;color:#fff}
+.danger{background:#b83232;color:#fff}
+@media(max-width:850px){
+ .homegrid{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr}
+ .formgrid{grid-template-columns:1fr}.container{padding:0 10px}.header h1{font-size:21px}
+ .card{padding:15px;border-radius:18px}
+}
+@media print{
+ .header,.toolbar,.actions,.formcard,.back{display:none!important}
+ body{background:#fff}.card{box-shadow:none;border:0}.container{max-width:none}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const TYPES={
+ civil:{name:"الطعون المدنية والشخصية",color:"green"},
+ criminal:{name:"الطعون الجنائية",color:"blue"},
+ reports:{name:"التقارير القضائية الجنائية",color:"gold"}
+};
+let current=null;
+
+function key(t){return "z_sijil_"+t}
+function load(t){try{return JSON.parse(localStorage.getItem(key(t))||"[]")}catch(e){return[]}}
+function save(t,a){localStorage.setItem(key(t),JSON.stringify(a))}
+function esc(x){return String(x??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function home(){
+ document.getElementById("app").innerHTML=`
+ <header class="header">
+   <h1>سجل قيد الطعون والتقارير القضائية</h1>
+   <h2>محكمة الحالي الابتدائية</h2>
+   <p>المختص: زكريا الشرعبي — السنة: 1447 / 1448 هـ</p>
+ </header>
+ <main class="container">
+  <div class="homegrid">
+   <section class="homecard">
+    <h2>① قيد الطعون المدنية والشخصية</h2><p>سجل شامل لجميع الطعون وتسلسل مستقل</p>
+    <button class="mainbtn" onclick="openReg('civil')">الدخول إلى السجل</button>
+   </section>
+   <section class="homecard blue">
+    <h2>② قيد الطعون الجنائية</h2><p>سجل شامل لجميع الطعون وتسلسل مستقل</p>
+    <button class="mainbtn bluebtn" onclick="openReg('criminal')">الدخول إلى السجل</button>
+   </section>
+   <section class="homecard gold">
+    <h2>③ قيد التقارير القضائية الجنائية</h2><p>سجل شامل لجميع التقارير وتسلسل مستقل</p>
+    <button class="mainbtn goldbtn" onclick="openReg('reports')">الدخول إلى السجل</button>
+   </section>
+  </div>
+  <section class="card gold" style="margin-top:22px">
+   <h2 style="text-align:center">💾 النسخ الاحتياطي واسترجاع البيانات</h2>
+   <p class="desc">احفظ سجلاتك في ملف واحد، واسترجعها عند الحاجة.</p>
+   <div class="actions">
+    <button class="goldbtn" onclick="backup()">📥 إنشاء نسخة احتياطية</button>
+    <button class="graybtn" onclick="document.getElementById('restoreFile').click()">📤 استرجاع نسخة احتياطية</button>
+    <input id="restoreFile" type="file" accept=".json" class="hidden" onchange="restore(this)">
+   </div>
+  </section>
+ </main>`;
+}
+
+function openReg(t){
+ current=t; renderReg();
+}
+function renderReg(){
+ const t=current, data=load(t), type=TYPES[t];
+ document.getElementById("app").innerHTML=`
+ <header class="header"><h1>${type.name}</h1><h2>محكمة الحالي الابتدائية</h2><p>المختص: زكريا الشرعبي</p></header>
+ <main class="container">
+  <section class="card ${type.color==='blue'?'blue':type.color==='gold'?'gold':''}">
+   <button class="back" onclick="home()">↩ الرئيسية</button>
+   <h2 style="margin-top:16px">${type.name}</h2>
+   <div class="toolbar">
+    <input id="search" placeholder="ابحث بالاسم أو رقم السند أو رقم القيد" oninput="drawTable()">
+    <button class="mainbtn" onclick="showForm()">+ إضافة قيد جديد</button>
+    <button class="graybtn" onclick="window.print()">طباعة</button>
+   </div>
+   <div class="actions">
+    <button class="bluebtn" onclick="exportCSV()">تصدير Excel/CSV</button>
+    <button class="graybtn" onclick="clearAll()">حذف جميع القيود</button>
+   </div>
+   <div class="tablewrap"><table>
+    <thead><tr>
+     <th>التسلسل</th><th>اسم الطاعن</th><th>المطعون ضده</th><th>رقم السند</th>
+     <th>تاريخ السند</th><th>صدور الحكم</th><th>تاريخ القيد</th><th>ملاحظات</th><th>إجراءات</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+   </table></div>
+  </section>
+  <section id="formCard" class="card formcard hidden">
+   <h2>إضافة قيد جديد</h2>
+   <div class="formgrid">
+    <input id="fPlaintiff" placeholder="اسم الطاعن *">
+    <input id="fDefendant" placeholder="المطعون ضده *">
+    <input id="fDoc" placeholder="رقم السند">
+    <input id="fDocDate" type="date" title="تاريخ السند">
+    <input id="fJudgmentDate" type="date" title="تاريخ صدور الحكم">
+    <input id="fRegDate" type="date" title="تاريخ القيد">
+    <textarea id="fNotes" class="full" placeholder="ملاحظات"></textarea>
+   </div>
+   <div class="actions">
+    <button class="mainbtn" style="width:auto" onclick="addRecord()">حفظ القيد</button>
+    <button class="back" onclick="hideForm()">إلغاء</button>
+   </div>
+  </section>
+ </main>`;
+ drawTable();
+}
+function showForm(){document.getElementById("formCard").classList.remove("hidden");document.getElementById("fRegDate").valueAsDate=new Date()}
+function hideForm(){document.getElementById("formCard").classList.add("hidden")}
+function addRecord(){
+ const p=document.getElementById("fPlaintiff").value.trim(), d=document.getElementById("fDefendant").value.trim();
+ if(!p||!d){alert("يرجى إدخال اسم الطاعن والمطعون ضده.");return}
+ const a=load(current);
+ a.push({id:Date.now(),plaintiff:p,defendant:d,doc:document.getElementById("fDoc").value.trim(),
+ docDate:document.getElementById("fDocDate").value,judgmentDate:document.getElementById("fJudgmentDate").value,
+ regDate:document.getElementById("fRegDate").value,notes:document.getElementById("fNotes").value.trim()});
+ save(current,a); hideForm(); renderReg();
+}
+function fmt(d){if(!d)return""; let x=d.split("-"); return x[2]+"/"+x[1]+"/"+x[0]}
+function drawTable(){
+ const body=document.getElementById("rows"); if(!body)return;
+ const q=(document.getElementById("search")?.value||"").trim().toLowerCase();
+ const a=load(current).filter(r=>[r.plaintiff,r.defendant,r.doc,r.notes].join(" ").toLowerCase().includes(q));
+ if(!a.length){body.innerHTML='<tr><td colspan="9" class="empty">لا توجد قيود مسجلة</td></tr>';return}
+ body.innerHTML=a.map((r,i)=>`<tr>
+ <td>${i+1}</td><td>${esc(r.plaintiff)}</td><td>${esc(r.defendant)}</td><td>${esc(r.doc)}</td>
+ <td>${fmt(r.docDate)}</td><td>${fmt(r.judgmentDate)}</td><td>${fmt(r.regDate)}</td><td>${esc(r.notes)}</td>
+ <td><button class="danger" style="padding:7px 11px;font-size:13px" onclick="del(${r.id})">حذف</button></td>
+ </tr>`).join("");
+}
+function del(id){if(confirm("هل تريد حذف هذا القيد؟")){save(current,load(current).filter(x=>x.id!==id));drawTable()}}
+function clearAll(){if(confirm("سيتم حذف جميع قيود هذا السجل فقط. هل أنت متأكد؟")){save(current,[]);drawTable()}}
+function csvCell(x){return '"'+String(x??"").replace(/"/g,'""')+'"'}
+function exportCSV(){
+ const a=load(current), rows=[["التسلسل","اسم الطاعن","المطعون ضده","رقم السند","تاريخ السند","صدور الحكم","تاريخ القيد","ملاحظات"]];
+ a.forEach((r,i)=>rows.push([i+1,r.plaintiff,r.defendant,r.doc,fmt(r.docDate),fmt(r.judgmentDate),fmt(r.regDate),r.notes]));
+ const csv="\uFEFF"+rows.map(r=>r.map(csvCell).join(",")).join("\n");
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
+ const u=URL.createObjectURL(blob), ael=document.createElement("a");ael.href=u;ael.download="سجل_"+TYPES[current].name+".csv";ael.click();URL.revokeObjectURL(u);
+}
+function backup(){
+ const obj={app:"سجل قيد الطعون والتقارير القضائية",version:1,date:new Date().toISOString(),
+ civil:load("civil"),criminal:load("criminal"),reports:load("reports")};
+ const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});
+ const u=URL.createObjectURL(blob), a=document.createElement("a");a.href=u;a.download="نسخة_احتياطية_سجل_الطعون.json";a.click();URL.revokeObjectURL(u);
+}
+function restore(input){
+ const file=input.files[0];if(!file)return;
+ const reader=new FileReader();reader.onload=()=>{try{
+  const o=JSON.parse(reader.result); if(!o||!Array.isArray(o.civil)||!Array.isArray(o.criminal)||!Array.isArray(o.reports))throw 0;
+  if(confirm("سيتم استبدال البيانات الحالية بالنسخة الاحتياطية. هل تريد المتابعة؟")){
+   save("civil",o.civil);save("criminal",o.criminal);save("reports",o.reports);alert("تم استرجاع البيانات بنجاح.");home();
+  }
+ }catch(e){alert("ملف النسخة الاحتياطية غير صالح.")}};reader.readAsText(file);input.value="";
+}
+home();
+</script>
+</body>
+</html>
